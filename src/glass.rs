@@ -1,5 +1,8 @@
 use std::cmp::min;
+use std::fmt::{Display, Error, Formatter};
 use std::ops::{Add, Sub};
+
+use regex::Regex;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Glass {
@@ -31,6 +34,18 @@ impl Glass {
     }
 }
 
+impl From<&str> for Glass {
+    fn from(s: &str) -> Self {
+        let re = Regex::new(r"^(?P<current>\d*)/(?P<capacity>\d*)$").unwrap();
+        let caps = re.captures(s).expect("Invalid string, expected something like '2/5'");
+
+        let current: u32 = caps.name("current").unwrap().as_str().parse().unwrap();
+        let capacity: u32 = caps.name("capacity").unwrap().as_str().parse().unwrap();
+
+        Glass::new(current, capacity)
+    }
+}
+
 impl Add<u32> for Glass {
     type Output = Glass;
 
@@ -49,6 +64,12 @@ impl Sub<u32> for Glass {
         } else {
             Glass::new(self.current - rhs, self.capacity)
         }
+    }
+}
+
+impl Display for Glass {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        write!(f, "{}/{}", self.current, self.capacity)
     }
 }
 
@@ -83,6 +104,40 @@ mod tests {
         }
     }
 
+    mod glass_from_string {
+        use pretty_assertions::assert_eq;
+
+        use super::*;
+
+        #[test]
+        fn create_a_glass_from_string() {
+            let current = 4;
+            let capacity = 7;
+            let s = format!("{}/{}", 4, 7);
+            let glass = Glass::from(s.as_str());
+
+            assert_eq!(glass, Glass { current, capacity });
+        }
+
+        #[test]
+        #[should_panic]
+        fn create_a_glass_from_invalid_string() {
+            Glass::from("3");
+        }
+
+        #[test]
+        #[should_panic]
+        fn create_a_glass_from_invalid_string_2() {
+            Glass::from("a/b");
+        }
+
+        #[test]
+        #[should_panic]
+        fn create_a_glass_from_invalid_string_3() {
+            Glass::from("1/2/3");
+        }
+    }
+
     mod create_empty_glass {
         use pretty_assertions::assert_eq;
 
@@ -100,6 +155,19 @@ mod tests {
         #[should_panic]
         fn create_an_empty_glass_with_invalid_capacity() {
             Glass::empty(0);
+        }
+    }
+
+    mod glass_display {
+        use pretty_assertions::assert_eq;
+
+        use super::*;
+
+        #[test]
+        fn display_a_glass() {
+            let s = "4/7";
+            let glass = Glass::from(s);
+            assert_eq!(s.to_owned(), format!("{}", glass));
         }
     }
 

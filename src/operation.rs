@@ -1,3 +1,5 @@
+use std::fmt::{Display, Error, Formatter};
+
 use crate::operation::Operation::*;
 
 pub type GlassId = u32;
@@ -22,6 +24,17 @@ impl Operation {
     }
 }
 
+impl Display for Operation {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        let s = match self {
+            Empty { glass } => format!("Empty({})", glass),
+            Fill { glass } => format!("Fill({})", glass),
+            Pour { from, to } => format!("Pour({}->{})", from, to),
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
@@ -38,12 +51,30 @@ mod tests {
     }
 
     #[test]
+    fn display_empty() {
+        let glass: GlassId = 0;
+
+        let op = Operation::empty(glass);
+
+        assert_eq!("Empty(0)".to_owned(), format!("{}", op))
+    }
+
+    #[test]
     fn create_fill() {
         let glass: GlassId = 0;
 
         let result = Operation::fill(glass);
 
         assert_eq!(result, Fill { glass })
+    }
+
+    #[test]
+    fn display_fill() {
+        let glass: GlassId = 0;
+
+        let op = Operation::fill(glass);
+
+        assert_eq!("Fill(0)".to_owned(), format!("{}", op))
     }
 
     #[test]
@@ -54,6 +85,16 @@ mod tests {
         let result = Operation::pour(from, to);
 
         assert_eq!(result, Pour { from, to })
+    }
+
+    #[test]
+    fn display_pour() {
+        let from: GlassId = 0;
+        let to: GlassId = 1;
+
+        let op = Operation::pour(from, to);
+
+        assert_eq!("Pour(0->1)".to_owned(), format!("{}", op))
     }
 
     #[test]
