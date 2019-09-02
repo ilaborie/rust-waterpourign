@@ -1,10 +1,10 @@
-use std::fmt::{Display, Error, Formatter};
+use std::fmt::{Debug, Display, Error, Formatter};
 
 use crate::operation::Operation::*;
 
-pub type GlassId = u32;
+pub type GlassId = usize;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq)]
 pub enum Operation {
     Empty { glass: GlassId },
     Fill { glass: GlassId },
@@ -22,16 +22,25 @@ impl Operation {
         assert_ne!(from, to, "Cannot pour an glass into itself");
         Pour { from, to }
     }
+
+    fn as_string(&self) -> String {
+        match self {
+            Empty { glass } => format!("Empty({})", glass),
+            Fill { glass } => format!("Fill({})", glass),
+            Pour { from, to } => format!("Pour({}->{})", from, to),
+        }
+    }
+}
+
+impl Debug for Operation {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        write!(f, "{}", self.as_string())
+    }
 }
 
 impl Display for Operation {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-        let s = match self {
-            Empty { glass } => format!("Empty({})", glass),
-            Fill { glass } => format!("Fill({})", glass),
-            Pour { from, to } => format!("Pour({}->{})", from, to),
-        };
-        write!(f, "{}", s)
+        write!(f, "{}", self.as_string())
     }
 }
 

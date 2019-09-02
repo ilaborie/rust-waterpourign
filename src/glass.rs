@@ -1,24 +1,34 @@
 use std::cmp::min;
 use std::fmt::{Display, Error, Formatter};
+use std::hash::{Hash, Hasher};
 use std::ops::{Add, Sub};
 
 use regex::Regex;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Glass {
-    capacity: u32,
-    current: u32,
+    pub capacity: u32,
+    pub current: u32,
 }
 
 impl Glass {
+
     pub fn new(current: u32, capacity: u32) -> Self {
         assert!(capacity > 0, "Capacity should be > 0");
         assert!(current <= capacity, "Current should be <= capacity");
         Self { capacity, current }
     }
 
-    pub fn empty(capacity: u32) -> Glass {
+    pub fn new_empty(capacity: u32) -> Glass {
         Glass::new(0, capacity)
+    }
+
+    pub fn empty(&self) -> Glass {
+        Glass::new_empty(self.capacity)
+    }
+
+    pub fn fill(&self) -> Glass {
+        Glass::new(self.capacity, self.capacity)
     }
 
     pub fn is_empty(&self) -> bool {
@@ -60,7 +70,7 @@ impl Sub<u32> for Glass {
 
     fn sub(self, rhs: u32) -> Self::Output {
         if rhs >= self.current {
-            Glass::empty(self.capacity)
+            Glass::new_empty(self.capacity)
         } else {
             Glass::new(self.current - rhs, self.capacity)
         }
@@ -70,6 +80,13 @@ impl Sub<u32> for Glass {
 impl Display for Glass {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         write!(f, "{}/{}", self.current, self.capacity)
+    }
+}
+
+impl Hash for Glass {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.current.hash(state);
+        self.capacity.hash(state);
     }
 }
 
@@ -146,7 +163,7 @@ mod tests {
         #[test]
         fn create_an_empty_glass() {
             let capacity = 1;
-            let glass = Glass::empty(capacity);
+            let glass = Glass::new_empty(capacity);
 
             assert_eq!(glass, Glass { current: 0, capacity });
         }
@@ -154,7 +171,7 @@ mod tests {
         #[test]
         #[should_panic]
         fn create_an_empty_glass_with_invalid_capacity() {
-            Glass::empty(0);
+            Glass::new_empty(0);
         }
     }
 
@@ -177,7 +194,7 @@ mod tests {
         #[test]
         fn glass_empty() {
             let capacity = 1;
-            let glass = Glass::empty(capacity);
+            let glass = Glass::new_empty(capacity);
 
             assert!(glass.is_empty());
         }
@@ -228,7 +245,7 @@ mod tests {
         #[test]
         fn glass_empty_remaining_capacity() {
             let capacity = 10;
-            let glass = Glass::empty(capacity);
+            let glass = Glass::new_empty(capacity);
 
             assert_eq!(glass.remaining_capacity(), capacity);
         }
@@ -239,6 +256,40 @@ mod tests {
             let glass = Glass::new(capacity, capacity);
 
             assert_eq!(glass.remaining_capacity(), 0);
+        }
+    }
+
+    mod empty {
+        use pretty_assertions::assert_eq;
+
+        use super::*;
+
+        #[test]
+        fn glass_empty() {
+            let current = 3;
+            let capacity = 10;
+            let glass = Glass::new(current, capacity);
+
+            let result = glass.empty();
+
+            assert_eq!(result, Glass { current: 0, capacity });
+        }
+    }
+
+    mod fill {
+        use pretty_assertions::assert_eq;
+
+        use super::*;
+
+        #[test]
+        fn glass_fill() {
+            let current = 3;
+            let capacity = 10;
+            let glass = Glass::new(current, capacity);
+
+            let result = glass.fill();
+
+            assert_eq!(result, Glass { current: capacity, capacity });
         }
     }
 
