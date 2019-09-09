@@ -1,13 +1,41 @@
 use std::collections::HashSet;
+use std::fmt::{Display, Error, Formatter};
 
 use crate::operation::Operation;
 use crate::solver::SolverError::{InvalidProblem, UnsolvableProblem};
 use crate::state::State;
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct Problem {
+    from: State,
+    to: State,
+}
+
+impl Problem {
+    pub fn new(from: State, to: State) -> Problem {
+        Problem { from, to }
+    }
+}
+
+impl From<(&str, &str)> for Problem {
+    fn from(pair: (&str, &str)) -> Self {
+        Problem {
+            from: State::from(pair.0),
+            to: State::from(pair.1),
+        }
+    }
+}
+
+impl Display for Problem {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "{} -> {}", self.from.clone(), self.to.clone())
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum SolverError {
-    InvalidProblem { from: State, to: State, reason: String },
-    UnsolvableProblem { from: State, to: State },
+    InvalidProblem { problem: Problem, reason: String },
+    UnsolvableProblem { problem: Problem },
 }
 
 pub type SolverResult = Result<Vec<Operation>, SolverError>;
@@ -16,31 +44,34 @@ pub type SolverResult = Result<Vec<Operation>, SolverError>;
 pub type ASolver = dyn Fn(State, State) -> SolverResult;
 
 pub trait Solver {
-    fn solve(&self, from: State, to: State) -> SolverResult;
+    fn solve(&self, problem: Problem) -> SolverResult;
 }
 
 pub trait SolverWithAux {
-    fn solve_aux(&self, state_with_history: StateWithHistory, initial_state: State, final_state: State, visited: HashSet<State>) -> SolverResult;
+    fn solve_aux(&self, problem: Problem, state_with_history: StateWithHistory, visited: HashSet<State>) -> SolverResult;
 }
 
 type History = Vec<Operation>;
 
 type StateWithHistory = Vec<(State, History)>;
 
-fn check_solvable_problem(from: State, to: State) -> Option<SolverError> {
+fn check_solvable_problem(problem: Problem) -> Option<SolverError> {
+    let from = problem.from.clone();
+    let to = problem.to.clone();
+
     if from.glasses().len() < 2 {
-        return Some(InvalidProblem { from, to, reason: "Should have at least two glasses".to_string() });
+        return Some(InvalidProblem { problem: problem.clone(), reason: "Should have at least two glasses".to_string() });
     }
 
     if from.glasses().len() != to.glasses().len() {
-        return Some(InvalidProblem { from, to, reason: "Should have same number of glasses".to_string() });
+        return Some(InvalidProblem { problem: problem.clone(), reason: "Should have same number of glasses".to_string() });
     }
 
     let has_invalid_size = from.glasses().into_iter()
         .zip(to.glasses().iter())
         .any(|(g1, g2)| g1.capacity != g2.capacity);
     if has_invalid_size {
-        return Some(InvalidProblem { from, to, reason: "Should have same capacity for all glasses".to_string() });
+        return Some(InvalidProblem { problem: problem.clone(), reason: "Should have same capacity for all glasses".to_string() });
     }
 
     None
@@ -63,16 +94,16 @@ fn process_state_history(visited: &HashSet<State>,
     }
 }
 
-fn solve<S>(solver: &S, from: State, to: State) -> SolverResult where S: SolverWithAux {
-    let check = check_solvable_problem(from.clone(), to.clone());
+fn solve<S>(solver: &S, problem: Problem) -> SolverResult where S: SolverWithAux {
+    let check = check_solvable_problem(problem.clone());
     if check.is_some() {
         return Err(check.unwrap());
     }
 
-    let start: StateWithHistory = vec![(from.clone(), vec![])];
+    let start: StateWithHistory = vec![(problem.from.clone(), vec![])];
     let mut set = HashSet::new();
-    set.insert(from.clone());
-    solver.solve_aux(start, from, to, set)
+    set.insert(problem.from.clone());
+    solver.solve_aux(problem, start, set)
 }
 
 // Rec
@@ -80,9 +111,9 @@ fn solve<S>(solver: &S, from: State, to: State) -> SolverResult where S: SolverW
 pub struct RecSolver();
 
 impl SolverWithAux for RecSolver {
-    fn solve_aux(&self, state_with_history: StateWithHistory, initial_state: State, final_state: State, visited: HashSet<State>) -> SolverResult {
+    fn solve_aux(&self, problem: Problem, state_with_history: StateWithHistory, visited: HashSet<State>) -> SolverResult {
         let maybe_solution = state_with_history.clone().into_iter()
-            .find(|(state, _)| *state == final_state);
+            .find(|(state, _)| *state == problem.to);
         if maybe_solution.is_some() {
             let result = maybe_solution.unwrap();
             return Ok(result.1);
@@ -95,18 +126,18 @@ impl SolverWithAux for RecSolver {
             process_state_history(&visited, &mut new_states_with_history, &mut new_visited, state, history);
         }
 
-        // check visited
+// check visited
         if new_visited.len() == visited.len() {
-            return Err(UnsolvableProblem { from: initial_state, to: final_state });
+            return Err(UnsolvableProblem { problem });
         }
-        // TailCall
-        self.solve_aux(new_states_with_history, initial_state, final_state, new_visited)
+// TailCall
+        self.solve_aux(problem, new_states_with_history, new_visited)
     }
 }
 
 impl Solver for RecSolver {
-    fn solve(&self, from: State, to: State) -> SolverResult {
-        solve(self, from, to)
+    fn solve(&self, problem: Problem) -> SolverResult {
+        solve(self, problem)
     }
 }
 
@@ -117,29 +148,29 @@ impl Solver for RecSolver {
 pub struct Rec2Solver();
 
 impl SolverWithAux for Rec2Solver {
-    fn solve_aux(&self, state_with_history: StateWithHistory, initial_state: State, final_state: State, visited: HashSet<State>) -> SolverResult {
+    fn solve_aux(&self, problem: Problem, state_with_history: StateWithHistory, visited: HashSet<State>) -> SolverResult {
         let mut new_states_with_history: StateWithHistory = vec![];
         let mut new_visited: HashSet<State> = visited.clone();
 
         for (state, history) in state_with_history {
-            if state == final_state {
+            if state == problem.to {
                 return Ok(history);
             }
             process_state_history(&visited, &mut new_states_with_history, &mut new_visited, state, history);
         }
 
-        // check visited
+// check visited
         if new_visited.len() == visited.len() {
-            return Err(UnsolvableProblem { from: initial_state, to: final_state });
+            return Err(UnsolvableProblem { problem });
         }
-        // TailCall
-        self.solve_aux(new_states_with_history, initial_state, final_state, new_visited)
+// TailCall
+        self.solve_aux(problem, new_states_with_history, new_visited)
     }
 }
 
 impl Solver for Rec2Solver {
-    fn solve(&self, from: State, to: State) -> SolverResult {
-        solve(self, from, to)
+    fn solve(&self, problem: Problem) -> SolverResult {
+        solve(self, problem)
     }
 }
 
@@ -149,27 +180,27 @@ impl Solver for Rec2Solver {
 pub struct ImperativeSolver();
 
 impl Solver for ImperativeSolver {
-    fn solve(&self, from: State, to: State) -> SolverResult {
-        // Check
-        let check = check_solvable_problem(from.clone(), to.clone());
+    fn solve(&self, problem: Problem) -> SolverResult {
+// Check
+        let check = check_solvable_problem(problem.clone());
         if check.is_some() {
             return Err(check.unwrap());
         }
 
-        // first iteration
-        let mut states_with_history: StateWithHistory = vec![(from.clone(), vec![])];
+// first iteration
+        let mut states_with_history: StateWithHistory = vec![(problem.from.clone(), vec![])];
         let mut visited: HashSet<State> = HashSet::new();
-        visited.insert(from.clone());
+        visited.insert(problem.from.clone());
 
         loop {
             let maybe_solution = states_with_history.clone().into_iter()
-                .find(|(state, _)| *state == to.clone());
+                .find(|(state, _)| *state == problem.to.clone());
             if maybe_solution.is_some() {
                 let result = maybe_solution.unwrap();
                 return Ok(result.1);
             }
 
-            // Build new solution
+// Build new solution
             let mut new_states_with_history: StateWithHistory = vec![];
             let mut new_visited: HashSet<State> = visited.clone();
 
@@ -177,9 +208,9 @@ impl Solver for ImperativeSolver {
                 process_state_history(&visited, &mut new_states_with_history, &mut new_visited, state, history);
             }
 
-            // check visited
+// check visited
             if new_visited.len() == visited.len() {
-                return Err(UnsolvableProblem { from, to });
+                return Err(UnsolvableProblem { problem });
             }
 
             states_with_history = new_states_with_history;
@@ -201,8 +232,9 @@ mod tests {
                    expected_size: usize) {
         let from = State::from(input);
         let to = State::from(output);
+        let problem = Problem { from, to };
 
-        let result = solver.solve(from, to);
+        let result = solver.solve(problem.clone());
 
         let size = result.map(|lst| lst.len())
             .expect("Should found a solution");
@@ -238,11 +270,12 @@ mod tests {
             let solver = RecSolver();
             let from = State::from("0/8, 0/4, 0/2");
             let to = State::from("0/4, 0/2");
+            let problem = Problem { from, to };
 
-            let result = solver.solve(from.clone(), to.clone());
+            let result = solver.solve(problem.clone());
 
             let reason = "Should have same number of glasses".to_string();
-            assert_eq!(result, Err(InvalidProblem { from, to, reason }))
+            assert_eq!(result, Err(InvalidProblem { problem, reason }))
         }
 
         #[test]
@@ -250,11 +283,12 @@ mod tests {
             let solver = RecSolver();
             let from = State::from("0/8, 0/4, 0/2");
             let to = State::from("1/8, 0/4, 0/2");
+            let problem = Problem { from, to };
 
-            let result = solver.solve(from.clone(), to.clone());
+            let result = solver.solve(problem.clone());
 
 // FIXME I just want to test the type
-            assert_eq!(result, Err(UnsolvableProblem { from, to }))
+            assert_eq!(result, Err(UnsolvableProblem { problem }))
         }
 
         #[test]
@@ -296,11 +330,12 @@ mod tests {
             let solver = Rec2Solver();
             let from = State::from("0/8, 0/4, 0/2");
             let to = State::from("0/4, 0/2");
+            let problem = Problem { from, to };
 
-            let result = solver.solve(from.clone(), to.clone());
+            let result = solver.solve(problem.clone());
 
             let reason = "Should have same number of glasses".to_string();
-            assert_eq!(result, Err(InvalidProblem { from, to, reason }))
+            assert_eq!(result, Err(InvalidProblem { problem, reason }))
         }
 
         #[test]
@@ -308,11 +343,12 @@ mod tests {
             let solver = Rec2Solver();
             let from = State::from("0/8, 0/4, 0/2");
             let to = State::from("1/8, 0/4, 0/2");
+            let problem = Problem { from, to };
 
-            let result = solver.solve(from.clone(), to.clone());
+            let result = solver.solve(problem.clone());
 
 // FIXME I just want to test the type
-            assert_eq!(result, Err(UnsolvableProblem { from, to }))
+            assert_eq!(result, Err(UnsolvableProblem { problem }))
         }
 
         #[test]
@@ -354,11 +390,12 @@ mod tests {
             let solver = ImperativeSolver();
             let from = State::from("0/8, 0/4, 0/2");
             let to = State::from("0/4, 0/2");
+            let problem = Problem { from, to };
 
-            let result = solver.solve(from.clone(), to.clone());
+            let result = solver.solve(problem.clone());
 
             let reason = "Should have same number of glasses".to_string();
-            assert_eq!(result, Err(InvalidProblem { from, to, reason }))
+            assert_eq!(result, Err(InvalidProblem { problem, reason }))
         }
 
         #[test]
@@ -366,11 +403,12 @@ mod tests {
             let solver = ImperativeSolver();
             let from = State::from("0/8, 0/4, 0/2");
             let to = State::from("1/8, 0/4, 0/2");
+            let problem = Problem { from, to };
 
-            let result = solver.solve(from.clone(), to.clone());
+            let result = solver.solve(problem.clone());
 
 // FIXME I just want to test the type
-            assert_eq!(result, Err(UnsolvableProblem { from, to }))
+            assert_eq!(result, Err(UnsolvableProblem { problem }))
         }
 
         #[test]

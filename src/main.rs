@@ -37,15 +37,16 @@ fn main() {
 // FIXME May change Solver to function
 fn solve<S>(solver: S, from: State, to: State) where S: Solver {
     println!("Solve {} -> {}", from, to);
-    let result = solver.solve(from.clone(), to);
+    let problem = Problem::new(from.clone(),to);
+    let result = solver.solve(problem.clone());
     match result {
-        Err(InvalidProblem { from: _, to: _, reason }) =>
+        Err(InvalidProblem { problem: _, reason }) =>
             println!("Cannot solve because {}", reason),
-        Err(UnsolvableProblem { from: _, to: _ }) =>
+        Err(UnsolvableProblem { problem: _ }) =>
             println!("No solution found!"),
         Ok(moves) => {
             println!("A solution found");
-            let mut state = from;
+            let mut state = from.clone();
             for m in moves {
                 let next = state.apply(m);
                 println!("{} with {} give {}", state, m, next);
