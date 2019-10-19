@@ -1,7 +1,7 @@
 use std::env;
 
 use rust_waterpouring::solver::*;
-use rust_waterpouring::solver::SolverError::*;
+use rust_waterpouring::solver::SolverError::{InvalidProblem, UnsolvableProblem};
 use rust_waterpouring::state::State;
 
 fn main() {
@@ -13,36 +13,36 @@ fn main() {
     ];
 
 
-    let solver_ref = env::args().into_iter()
+    let solver_ref = env::args()
         .nth(1)
         .unwrap();
 
-    let index: usize = env::args().into_iter()
+    let index: usize = env::args()
         .nth(2)
-        .map(|s| s.parse::<usize>().unwrap_or(0))
-        .unwrap_or(0);
+        .map_or(0, |s| s.parse::<usize>().unwrap_or(0));
+
 
     let (initial_state, final_state) = some_problems[index];
     let start = State::from(initial_state);
     let end = State::from(final_state);
 
     match solver_ref.as_str() {
-        "rec" => solve(RecSolver(), start, end),
-        "rec2" => solve(Rec2Solver(), start, end),
-        "imp" => solve(ImperativeSolver(), start, end),
+        "rec" => solve(&RecSolver(), &start, end),
+        "rec2" => solve(&Rec2Solver(), &start, end),
+        "imp" => solve(&ImperativeSolver(), &start, end),
         _ => panic!("Solver not found, use 'rec', 'rec2', 'imp'")
     };
 }
 
 // FIXME May change Solver to function
-fn solve<S>(solver: S, from: State, to: State) where S: Solver {
+fn solve<S>(solver: &S, from: &State, to: State) where S: Solver {
     println!("Solve {} -> {}", from, to);
-    let problem = Problem::new(from.clone(),to);
+    let problem = Problem::new(from.clone(), to);
     let result = solver.solve(problem.clone());
     match result {
-        Err(InvalidProblem { problem: _, reason }) =>
+        Err(InvalidProblem { reason, .. }) =>
             println!("Cannot solve because {}", reason),
-        Err(UnsolvableProblem { problem: _ }) =>
+        Err(UnsolvableProblem { .. }) =>
             println!("No solution found!"),
         Ok(moves) => {
             println!("A solution found");

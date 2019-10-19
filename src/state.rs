@@ -1,11 +1,11 @@
 use std::fmt::{Display, Error, Formatter};
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 
 use crate::glass::Glass;
 use crate::operation::Operation;
 use crate::operation::Operation::*;
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct State {
     glasses: Vec<Glass>
 }
@@ -20,7 +20,7 @@ impl State {
         self.glasses.clone()
     }
 
-    pub fn apply(&self, operation: Operation) -> State {
+    pub fn apply(&self, operation: Operation) -> Self {
         // FIXME should try over ways to write this
         let mut next_glasses: Vec<Glass> = vec![];
         for (idx, g) in self.glasses.iter().enumerate() {
@@ -38,7 +38,7 @@ impl State {
             next_glasses.push(next_glass)
         }
 
-        State::new(next_glasses)
+        Self::new(next_glasses)
     }
 
     pub fn available_operations(&self) -> Vec<Operation> {
@@ -67,12 +67,11 @@ impl State {
 
 impl From<&str> for State {
     fn from(s: &str) -> Self {
-        let glasses: Vec<Glass> = s.split(",").into_iter()
-            .map(|s| s.trim())
-            .filter(|s| !s.is_empty())
-            .map(Glass::from)
+        let glasses: Vec<Glass> = s.split(',')
+            .map(str::trim)
+            .filter_map(|s| if s.is_empty() { None } else { Some(Glass::from(s)) })
             .collect();
-        State::new(glasses)
+        Self::new(glasses)
     }
 }
 
@@ -83,12 +82,6 @@ impl Display for State {
             .map(|g| format!("{}", g))
             .collect();
         write!(f, "{}", s.join(", "))
-    }
-}
-
-impl Hash for State {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.glasses.hash(state)
     }
 }
 

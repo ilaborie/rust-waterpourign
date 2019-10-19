@@ -1,45 +1,44 @@
 use std::cmp::min;
 use std::fmt::{Display, Error, Formatter};
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use std::ops::{Add, Sub};
 
 use regex::Regex;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Glass {
     pub capacity: u32,
     pub current: u32,
 }
 
 impl Glass {
-
     pub fn new(current: u32, capacity: u32) -> Self {
         assert!(capacity > 0, "Capacity should be > 0");
         assert!(current <= capacity, "Current should be <= capacity");
         Self { capacity, current }
     }
 
-    pub fn new_empty(capacity: u32) -> Glass {
-        Glass::new(0, capacity)
+    pub fn new_empty(capacity: u32) -> Self {
+        Self::new(0, capacity)
     }
 
-    pub fn empty(&self) -> Glass {
-        Glass::new_empty(self.capacity)
+    pub fn empty(self) -> Self {
+        Self::new_empty(self.capacity)
     }
 
-    pub fn fill(&self) -> Glass {
-        Glass::new(self.capacity, self.capacity)
+    pub fn fill(self) -> Self {
+        Self::new(self.capacity, self.capacity)
     }
 
-    pub fn is_empty(&self) -> bool {
+    pub fn is_empty(self) -> bool {
         self.current == 0
     }
 
-    pub fn is_full(&self) -> bool {
+    pub fn is_full(self) -> bool {
         self.current == self.capacity
     }
 
-    pub fn remaining_capacity(&self) -> u32 {
+    pub fn remaining_capacity(self) -> u32 {
         self.capacity - self.current
     }
 }
@@ -52,7 +51,7 @@ impl From<&str> for Glass {
         let current: u32 = caps.name("current").unwrap().as_str().parse().unwrap();
         let capacity: u32 = caps.name("capacity").unwrap().as_str().parse().unwrap();
 
-        Glass::new(current, capacity)
+        Self::new(current, capacity)
     }
 }
 
@@ -61,18 +60,18 @@ impl Add<u32> for Glass {
 
     fn add(self, rhs: u32) -> Self::Output {
         let current = min(self.capacity, self.current + rhs);
-        Glass::new(current, self.capacity)
+        Self::new(current, self.capacity)
     }
 }
 
 impl Sub<u32> for Glass {
-    type Output = Glass;
+    type Output = Self;
 
     fn sub(self, rhs: u32) -> Self::Output {
         if rhs >= self.current {
-            Glass::new_empty(self.capacity)
+            Self::new_empty(self.capacity)
         } else {
-            Glass::new(self.current - rhs, self.capacity)
+            Self::new(self.current - rhs, self.capacity)
         }
     }
 }
@@ -80,13 +79,6 @@ impl Sub<u32> for Glass {
 impl Display for Glass {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         write!(f, "{}/{}", self.current, self.capacity)
-    }
-}
-
-impl Hash for Glass {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.current.hash(state);
-        self.capacity.hash(state);
     }
 }
 

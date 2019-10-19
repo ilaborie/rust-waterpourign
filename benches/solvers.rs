@@ -17,21 +17,21 @@ pub fn criterion_benchmark(crit: &mut Criterion) {
             BenchmarkId::new("rec", problem.clone()), &(problem.clone()), |b, s| {
                 b.iter(|| {
                     let solver = RecSolver();
-                    solver.solve(s.clone());
+                    solver.solve(s.clone()).expect("Should work");
                 })
             });
         group.bench_with_input(
             BenchmarkId::new("rec2", problem.clone()), &(problem.clone()), |b, s| {
                 b.iter(|| {
                     let solver = Rec2Solver();
-                    solver.solve(s.clone());
+                    solver.solve(s.clone()).expect("Should work");
                 })
             });
         group.bench_with_input(
             BenchmarkId::new("imp", problem.clone()), &(problem.clone()), |b, s| {
                 b.iter(|| {
                     let solver = ImperativeSolver();
-                    solver.solve(s.clone());
+                    solver.solve(s.clone()).expect("Should work");
                 })
             });
     }

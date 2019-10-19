@@ -12,14 +12,14 @@ pub struct Problem {
 }
 
 impl Problem {
-    pub fn new(from: State, to: State) -> Problem {
-        Problem { from, to }
+    pub fn new(from: State, to: State) -> Self {
+        Self { from, to }
     }
 }
 
 impl From<(&str, &str)> for Problem {
     fn from(pair: (&str, &str)) -> Self {
-        Problem {
+        Self {
             from: State::from(pair.0),
             to: State::from(pair.1),
         }
@@ -81,7 +81,7 @@ fn process_state_history(visited: &HashSet<State>,
                          new_states_with_history: &mut StateWithHistory,
                          new_visited: &mut HashSet<State>,
                          state: State,
-                         history: History) -> () {
+                         history: History) {
     let operations = state.available_operations();
     for op in operations {
         let new_state = state.apply(op);
@@ -96,8 +96,8 @@ fn process_state_history(visited: &HashSet<State>,
 
 fn solve<S>(solver: &S, problem: Problem) -> SolverResult where S: SolverWithAux {
     let check = check_solvable_problem(problem.clone());
-    if check.is_some() {
-        return Err(check.unwrap());
+    if let Some(msg) = check {
+        return Err(msg);
     }
 
     let start: StateWithHistory = vec![(problem.from.clone(), vec![])];
@@ -114,8 +114,7 @@ impl SolverWithAux for RecSolver {
     fn solve_aux(&self, problem: Problem, state_with_history: StateWithHistory, visited: HashSet<State>) -> SolverResult {
         let maybe_solution = state_with_history.clone().into_iter()
             .find(|(state, _)| *state == problem.to);
-        if maybe_solution.is_some() {
-            let result = maybe_solution.unwrap();
+        if let Some(result) = maybe_solution {
             return Ok(result.1);
         }
 
@@ -183,8 +182,8 @@ impl Solver for ImperativeSolver {
     fn solve(&self, problem: Problem) -> SolverResult {
 // Check
         let check = check_solvable_problem(problem.clone());
-        if check.is_some() {
-            return Err(check.unwrap());
+        if let Some(result) = check {
+            return Err(result);
         }
 
 // first iteration
@@ -195,8 +194,7 @@ impl Solver for ImperativeSolver {
         loop {
             let maybe_solution = states_with_history.clone().into_iter()
                 .find(|(state, _)| *state == problem.to.clone());
-            if maybe_solution.is_some() {
-                let result = maybe_solution.unwrap();
+            if let Some(result) = maybe_solution {
                 return Ok(result.1);
             }
 

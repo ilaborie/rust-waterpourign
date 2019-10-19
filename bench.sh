@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Build
+./build.sh
+
 # Bench
 cargo bench
 
