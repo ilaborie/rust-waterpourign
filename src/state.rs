@@ -3,7 +3,7 @@ use std::hash::Hash;
 
 use crate::glass::Glass;
 use crate::operation::Operation;
-use crate::operation::Operation::*;
+use crate::operation::Operation::{Empty, Fill, Pour};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct State {
@@ -13,7 +13,7 @@ pub struct State {
 impl State {
     pub fn new(glasses: Vec<Glass>) -> Self {
         assert!(!glasses.is_empty(), "State require at least one Glass");
-        State { glasses }
+        Self { glasses }
     }
 
     pub fn glasses(&self) -> Vec<Glass> {

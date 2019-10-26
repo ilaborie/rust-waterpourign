@@ -51,11 +51,10 @@ pub trait SolverWithAux {
     fn solve_aux(&self, problem: Problem, state_with_history: StateWithHistory, visited: HashSet<State>) -> SolverResult;
 }
 
-type History = Vec<Operation>;
 
-type StateWithHistory = Vec<(State, History)>;
+type StateWithHistory = Vec<(State, Vec<Operation>)>;
 
-fn check_solvable_problem(problem: Problem) -> Option<SolverError> {
+fn check_solvable_problem(problem: &Problem) -> Option<SolverError> {
     let from = problem.from.clone();
     let to = problem.to.clone();
 
@@ -80,13 +79,13 @@ fn check_solvable_problem(problem: Problem) -> Option<SolverError> {
 fn process_state_history(visited: &HashSet<State>,
                          new_states_with_history: &mut StateWithHistory,
                          new_visited: &mut HashSet<State>,
-                         state: State,
-                         history: History) {
+                         state: &State,
+                         history: &Vec<Operation>) {
     let operations = state.available_operations();
     for op in operations {
         let new_state = state.apply(op);
         if !visited.contains(&new_state) {
-            let mut new_history = history.clone();
+            let mut new_history = history.to_owned();
             new_history.push(op);
             new_states_with_history.push((new_state.clone(), new_history));
             new_visited.insert(new_state);
@@ -95,7 +94,7 @@ fn process_state_history(visited: &HashSet<State>,
 }
 
 fn solve<S>(solver: &S, problem: Problem) -> SolverResult where S: SolverWithAux {
-    let check = check_solvable_problem(problem.clone());
+    let check = check_solvable_problem(&problem);
     if let Some(msg) = check {
         return Err(msg);
     }
@@ -122,7 +121,7 @@ impl SolverWithAux for RecSolver {
         let mut new_visited: HashSet<State> = visited.clone();
 
         for (state, history) in state_with_history {
-            process_state_history(&visited, &mut new_states_with_history, &mut new_visited, state, history);
+            process_state_history(&visited, &mut new_states_with_history, &mut new_visited, &state, &history);
         }
 
 // check visited
@@ -155,7 +154,7 @@ impl SolverWithAux for Rec2Solver {
             if state == problem.to {
                 return Ok(history);
             }
-            process_state_history(&visited, &mut new_states_with_history, &mut new_visited, state, history);
+            process_state_history(&visited, &mut new_states_with_history, &mut new_visited, &state, &history);
         }
 
 // check visited
@@ -181,7 +180,7 @@ pub struct ImperativeSolver();
 impl Solver for ImperativeSolver {
     fn solve(&self, problem: Problem) -> SolverResult {
 // Check
-        let check = check_solvable_problem(problem.clone());
+        let check = check_solvable_problem(&problem);
         if let Some(result) = check {
             return Err(result);
         }
@@ -203,7 +202,7 @@ impl Solver for ImperativeSolver {
             let mut new_visited: HashSet<State> = visited.clone();
 
             for (state, history) in states_with_history {
-                process_state_history(&visited, &mut new_states_with_history, &mut new_visited, state, history);
+                process_state_history(&visited, &mut new_states_with_history, &mut new_visited, &state, &history);
             }
 
 // check visited

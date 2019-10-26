@@ -56,7 +56,7 @@ impl From<&str> for Glass {
 }
 
 impl Add<u32> for Glass {
-    type Output = Glass;
+    type Output = Self;
 
     fn add(self, rhs: u32) -> Self::Output {
         let current = min(self.capacity, self.current + rhs);
