@@ -1,4 +1,9 @@
 pub mod glass;
-pub mod operation;
+pub mod operations;
+pub mod problem;
 pub mod state;
 pub mod solver;
+pub mod solvers;
+//pub mod solvers::rec;
+//pub mod solvers::rec2;
+//pub mod solvers::imp;

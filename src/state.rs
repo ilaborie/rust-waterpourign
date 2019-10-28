@@ -2,8 +2,8 @@ use std::fmt::{Display, Error, Formatter};
 use std::hash::Hash;
 
 use crate::glass::Glass;
-use crate::operation::Operation;
-use crate::operation::Operation::{Empty, Fill, Pour};
+use crate::operations::Operation;
+use crate::operations::Operation::{Empty, Fill, Pour};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct State {
@@ -168,7 +168,7 @@ mod tests {
     mod available_operations {
         use pretty_assertions::assert_eq;
 
-        use crate::operation::Operation;
+        use crate::operations::Operation;
 
         use super::*;
 
@@ -232,7 +232,7 @@ mod tests {
     mod apply {
         use pretty_assertions::assert_eq;
 
-        use crate::operation::Operation;
+        use crate::operations::Operation;
 
         use super::*;
 

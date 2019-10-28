@@ -1,7 +1,10 @@
 use std::env;
 
-use rust_waterpouring::solver::*;
-use rust_waterpouring::solver::SolverError::{InvalidProblem, UnsolvableProblem};
+use rust_waterpouring::problem::{Problem, Solver};
+use rust_waterpouring::problem::SolverError::{InvalidProblem, UnsolvableProblem};
+use rust_waterpouring::solvers::imp::ImperativeSolver;
+use rust_waterpouring::solvers::rec2::Rec2Solver;
+use rust_waterpouring::solvers::rec::RecSolver;
 use rust_waterpouring::state::State;
 
 fn main() {
@@ -11,7 +14,6 @@ fn main() {
         ("12/12, 0/8, 0/5", "6/12, 6/8, 0/5"),
         ("0/24, 0/13, 0/11, 0/5", "6/24, 6/13, 6/11, 0/5"),
     ];
-
 
     let solver_ref = env::args()
         .nth(1)
