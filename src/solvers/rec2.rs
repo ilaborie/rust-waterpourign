@@ -31,7 +31,7 @@ impl SolverWithAux for Rec2Solver {
 
 impl Solver for Rec2Solver {
     fn solve(&self, problem: Problem) -> SolverResult {
-        solve(self, problem)
+        solve(self, &problem)
     }
 }
 
@@ -40,30 +40,16 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     use crate::problem::SolverError::InvalidProblem;
+    use crate::solvers::test_solver;
 
     use super::*;
-
-    fn test_solver(input: &str,
-                   output: &str,
-                   solver: &dyn Solver,
-                   expected_size: usize) {
-        let from = State::from(input);
-        let to = State::from(output);
-        let problem = Problem { from, to };
-
-        let result = solver.solve(problem.clone());
-
-        let size = result.map(|lst| lst.len())
-            .expect("Should found a solution");
-        assert_eq!(size, expected_size)
-    }
 
     #[test]
     fn already_found() {
         let solver = Rec2Solver();
         let from = "0/2, 0/1";
 
-        test_solver(from, from, &solver, 0)
+        assert_eq!(test_solver(from, from, &solver), 0)
     }
 
     #[test]
@@ -72,7 +58,7 @@ mod tests {
         let from = "0/5, 0/3";
         let to = "4/5, 0/3";
 
-        test_solver(from, to, &solver, 7)
+        assert_eq!(test_solver(from, to, &solver), 7)
     }
 
     #[test]
@@ -107,6 +93,6 @@ mod tests {
         let from = "0/8, 0/5";
         let to = "6/8, 0/5";
 
-        test_solver(from, to, &solver, 7)
+        assert_eq!(test_solver(from, to, &solver), 7)
     }
 }
