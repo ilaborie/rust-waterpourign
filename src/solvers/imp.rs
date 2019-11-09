@@ -27,19 +27,18 @@ impl Solver for ImperativeSolver {
 
 // Build new solution
             let mut new_states_with_history: StateWithHistory = vec![];
-            let mut new_visited: HashSet<State> = visited.clone();
+            let initial_visited_size = visited.len();
 
             for (state, history) in states_with_history {
-                process_state_history(&visited, &mut new_states_with_history, &mut new_visited, &state, &history);
+                process_state_history(&mut new_states_with_history, &mut visited, &state, &history);
             }
 
 // check visited
-            if new_visited.len() == visited.len() {
+            if initial_visited_size == visited.len() {
                 return Err(UnsolvableProblem { problem: problem.to_string() });
             }
 
             states_with_history = new_states_with_history;
-            visited = new_visited;
         }
     }
 }
@@ -49,9 +48,9 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     use crate::problem::SolverError::InvalidProblem;
+    use crate::solvers::test_solver;
 
     use super::*;
-    use crate::solvers::test_solver;
 
     #[test]
     fn already_found() {

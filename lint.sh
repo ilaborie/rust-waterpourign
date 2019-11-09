@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-cargo clippy -- -W clippy::pedantic -A clippy::module_name_repetitions
+cargo clean -p rust-waterpouring
+cargo clippy -- -W clippy::pedantic -A clippy::module-name-repetitions

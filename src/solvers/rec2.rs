@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::hash::BuildHasher;
 
 use crate::problem::{Problem, Solver, SolverResult, SolverWithAux, StateWithHistory};
 use crate::problem::SolverError::UnsolvableProblem;
@@ -9,23 +10,23 @@ use crate::state::State;
 pub struct Rec2Solver();
 
 impl SolverWithAux for Rec2Solver {
-    fn solve_aux(&self, problem: &Problem, state_with_history: StateWithHistory, visited: HashSet<State>) -> SolverResult {
+    fn solve_aux<S: BuildHasher>(&self, problem: &Problem, state_with_history: StateWithHistory, visited: &mut HashSet<State, S>) -> SolverResult {
         let mut new_states_with_history: StateWithHistory = vec![];
-        let mut new_visited: HashSet<State> = visited.clone();
+        let initial_visited_size = visited.len();
 
         for (state, history) in state_with_history {
             if state == problem.to {
                 return Ok(history);
             }
-            process_state_history(&visited, &mut new_states_with_history, &mut new_visited, &state, &history);
+            process_state_history(&mut new_states_with_history, visited, &state, &history);
         }
 
 // check visited
-        if new_visited.len() == visited.len() {
+        if initial_visited_size == visited.len() {
             return Err(UnsolvableProblem { problem: problem.to_string() });
         }
 // TailCall
-        self.solve_aux(problem, new_states_with_history, new_visited)
+        self.solve_aux(problem, new_states_with_history, visited)
     }
 }
 

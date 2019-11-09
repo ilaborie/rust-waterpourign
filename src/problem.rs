@@ -2,8 +2,9 @@ use std::collections::HashSet;
 use std::fmt::{Display, Error, Formatter};
 
 use crate::operations::Operation;
-use crate::state::State;
 use crate::problem::SolverError::InvalidProblem;
+use crate::state::State;
+use std::hash::BuildHasher;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Problem {
@@ -50,7 +51,7 @@ pub trait Solver {
 }
 
 pub trait SolverWithAux {
-    fn solve_aux(&self, problem: &Problem, state_with_history: StateWithHistory, visited: HashSet<State>) -> SolverResult;
+    fn solve_aux<S: BuildHasher>(&self, problem: &Problem, state_with_history: StateWithHistory, visited: &mut HashSet<State, S>) -> SolverResult;
 }
 
 

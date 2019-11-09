@@ -3,11 +3,10 @@ extern crate criterion;
 
 use criterion::{BenchmarkId, Criterion};
 
-use rust_waterpouring::solvers::*;
 use rust_waterpouring::solvers::imp::ImperativeSolver;
 use rust_waterpouring::solvers::rec2::Rec2Solver;
 use rust_waterpouring::solvers::rec::RecSolver;
-use rust_waterpouring::problem::Problem;
+use rust_waterpouring::problem::{Problem, Solver};
 
 pub fn criterion_benchmark(crit: &mut Criterion) {
     let problems: Vec<Problem> = vec![
