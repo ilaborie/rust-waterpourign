@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::problem::{check_solvable_problem, Problem, Solver, SolverResult, StateWithHistory};
 use crate::problem::SolverError::UnsolvableProblem;
 use crate::solver::process_state_history;
-use crate::state::State;
+use crate::models::state::State;
 
 #[derive(Debug)]
 pub struct ImperativeSolver();

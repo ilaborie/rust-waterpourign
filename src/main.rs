@@ -5,7 +5,7 @@ use rust_waterpouring::problem::SolverError::{InvalidProblem, UnsolvableProblem}
 use rust_waterpouring::solvers::imp::ImperativeSolver;
 use rust_waterpouring::solvers::rec2::Rec2Solver;
 use rust_waterpouring::solvers::rec::RecSolver;
-use rust_waterpouring::state::State;
+use rust_waterpouring::models::state::State;
 
 fn main() {
     let some_problems: Vec<(&str, &str)> = vec![

@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 use std::hash::BuildHasher;
 
-use crate::operations::Operation;
 use crate::problem::{check_solvable_problem, Problem, SolverResult, SolverWithAux, StateWithHistory};
-use crate::state::State;
+use crate::models::state::State;
+use crate::models::operations::Operation;
 
 pub fn process_state_history<S: BuildHasher>(new_states_with_history: &mut StateWithHistory,
                                              visited: &mut HashSet<State, S>,

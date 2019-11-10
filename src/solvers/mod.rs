@@ -1,5 +1,5 @@
 use crate::problem::{Problem, Solver};
-use crate::state::State;
+use crate::models::state::State;
 
 pub mod imp;
 pub mod rec;

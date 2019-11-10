@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display, Error, Formatter};
 
-use crate::operations::Operation::{Empty, Fill, Pour};
+use crate::models::operations::Operation::{Empty, Fill, Pour};
 
 pub type GlassId = usize;
 

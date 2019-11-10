@@ -1,10 +1,10 @@
 use std::collections::HashSet;
 use std::fmt::{Display, Error, Formatter};
-
-use crate::operations::Operation;
-use crate::problem::SolverError::InvalidProblem;
-use crate::state::State;
 use std::hash::BuildHasher;
+
+use crate::problem::SolverError::InvalidProblem;
+use crate::models::state::State;
+use crate::models::operations::Operation;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Problem {

@@ -1,11 +1,11 @@
 use std::fmt::{Display, Error, Formatter};
 use std::hash::Hash;
 
-use crate::glass::Glass;
-use crate::operations::Operation;
-use crate::operations::Operation::{Empty, Fill, Pour};
+use crate::models::glass::Glass;
+use crate::models::operations::Operation;
+use crate::models::operations::Operation::{Empty, Fill, Pour};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 pub struct State {
     glasses: Vec<Glass>
 }
@@ -26,13 +26,13 @@ impl State {
         for (idx, g) in self.glasses.iter().enumerate() {
             let next_glass: Glass = match operation {
                 Empty { glass } =>
-                    if idx == glass { g.empty() } else { *g },
+                    if idx == glass { g.empty() } else { g.clone() },
                 Fill { glass } =>
-                    if idx == glass { g.fill() } else { *g },
+                    if idx == glass { g.fill() } else { g.clone() },
                 Pour { from, to } =>
-                    if idx == from { *g - self.glasses[to].remaining_capacity() } //
-                    else if idx == to { *g + self.glasses[from].current } //
-                    else { *g },
+                    if idx == from { g.sub(self.glasses[to].remaining_capacity()) } //
+                    else if idx == to { g.add(self.glasses[from].current) } //
+                    else { g.clone() },
             };
 
             next_glasses.push(next_glass)
@@ -87,8 +87,9 @@ impl Display for State {
 
 #[cfg(test)]
 mod tests {
-    use crate::glass::Glass;
-    use crate::state::State;
+    use crate::models::glass::Glass;
+    use crate::models::state::State;
+    use crate::models::operations::Operation;
 
     mod create {
         use pretty_assertions::assert_eq;
@@ -168,7 +169,6 @@ mod tests {
     mod available_operations {
         use pretty_assertions::assert_eq;
 
-        use crate::operations::Operation;
 
         use super::*;
 
@@ -231,8 +231,6 @@ mod tests {
 
     mod apply {
         use pretty_assertions::assert_eq;
-
-        use crate::operations::Operation;
 
         use super::*;
 

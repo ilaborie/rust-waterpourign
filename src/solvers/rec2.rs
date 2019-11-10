@@ -4,7 +4,7 @@ use std::hash::BuildHasher;
 use crate::problem::{Problem, Solver, SolverResult, SolverWithAux, StateWithHistory};
 use crate::problem::SolverError::UnsolvableProblem;
 use crate::solver::{process_state_history, solve};
-use crate::state::State;
+use crate::models::state::State;
 
 #[derive(Debug)]
 pub struct Rec2Solver();

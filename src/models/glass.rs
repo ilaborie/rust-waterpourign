@@ -1,17 +1,17 @@
 use std::cmp::min;
 use std::fmt::{Display, Error, Formatter};
 use std::hash::Hash;
-use std::ops::{Add, Sub};
 
 use regex::Regex;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Glass {
     pub capacity: u32,
     pub current: u32,
 }
 
 impl Glass {
+
     pub fn new(current: u32, capacity: u32) -> Self {
         assert!(capacity > 0, "Capacity should be > 0");
         assert!(current <= capacity, "Current should be <= capacity");
@@ -22,24 +22,37 @@ impl Glass {
         Self::new(0, capacity)
     }
 
-    pub fn empty(self) -> Self {
+    pub fn empty(&self) -> Self {
         Self::new_empty(self.capacity)
     }
 
-    pub fn fill(self) -> Self {
+    pub fn fill(&self) -> Self {
         Self::new(self.capacity, self.capacity)
     }
 
-    pub fn is_empty(self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.current == 0
     }
 
-    pub fn is_full(self) -> bool {
+    pub fn is_full(&self) -> bool {
         self.current == self.capacity
     }
 
-    pub fn remaining_capacity(self) -> u32 {
+    pub fn remaining_capacity(&self) -> u32 {
         self.capacity - self.current
+    }
+
+    pub fn add(&self, rhs: u32) -> Self{
+        let current = min(self.capacity, self.current + rhs);
+        Self::new(current, self.capacity)
+    }
+
+    pub fn sub(&self, rhs: u32) -> Self {
+        if rhs >= self.current {
+            Self::new_empty(self.capacity)
+        } else {
+            Self::new(self.current - rhs, self.capacity)
+        }
     }
 }
 
@@ -55,27 +68,6 @@ impl From<&str> for Glass {
     }
 }
 
-impl Add<u32> for Glass {
-    type Output = Self;
-
-    fn add(self, rhs: u32) -> Self::Output {
-        let current = min(self.capacity, self.current + rhs);
-        Self::new(current, self.capacity)
-    }
-}
-
-impl Sub<u32> for Glass {
-    type Output = Self;
-
-    fn sub(self, rhs: u32) -> Self::Output {
-        if rhs >= self.current {
-            Self::new_empty(self.capacity)
-        } else {
-            Self::new(self.current - rhs, self.capacity)
-        }
-    }
-}
-
 impl Display for Glass {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         write!(f, "{}/{}", self.current, self.capacity)
@@ -84,7 +76,7 @@ impl Display for Glass {
 
 #[cfg(test)]
 mod tests {
-    use crate::glass::Glass;
+    use crate::models::glass::Glass;
 
     mod create_glass {
         use pretty_assertions::assert_eq;
@@ -296,7 +288,7 @@ mod tests {
             let capacity = 10;
             let glass = Glass::new(current, capacity);
 
-            let result = glass + 4;
+            let result = glass.add(4);
 
             assert_eq!(result, Glass { current: 7, capacity });
         }
@@ -307,7 +299,7 @@ mod tests {
             let capacity = 10;
             let glass = Glass::new(current, capacity);
 
-            let result = glass + 12;
+            let result = glass.add(12);
 
             assert_eq!(result, Glass { current: capacity, capacity });
         }
@@ -324,7 +316,7 @@ mod tests {
             let capacity = 10;
             let glass = Glass::new(current, capacity);
 
-            let result = glass - 4;
+            let result = glass.sub(4);
 
             assert_eq!(result, Glass { current: 3, capacity });
         }
@@ -335,7 +327,7 @@ mod tests {
             let capacity = 10;
             let glass = Glass::new(current, capacity);
 
-            let result = glass - 12;
+            let result = glass.sub(12);
 
             assert_eq!(result, Glass { current: 0, capacity });
         }
