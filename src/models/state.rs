@@ -5,7 +5,7 @@ use crate::models::glass::Glass;
 use crate::models::operations::Operation;
 use crate::models::operations::Operation::{Empty, Fill, Pour};
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct State {
     glasses: Vec<Glass>
 }
@@ -21,10 +21,8 @@ impl State {
     }
 
     pub fn apply(&self, operation: Operation) -> Self {
-        // FIXME should try over ways to write this
-        let mut next_glasses: Vec<Glass> = vec![];
-        for (idx, g) in self.glasses.iter().enumerate() {
-            let next_glass: Glass = match operation {
+        let next_glasses = self.glasses.iter().enumerate()
+            .map(|(idx, g)| match operation {
                 Empty { glass } =>
                     if idx == glass { g.empty() } else { g.clone() },
                 Fill { glass } =>
@@ -33,10 +31,7 @@ impl State {
                     if idx == from { g.sub(self.glasses[to].remaining_capacity()) } //
                     else if idx == to { g.add(self.glasses[from].current) } //
                     else { g.clone() },
-            };
-
-            next_glasses.push(next_glass)
-        }
+            }).collect();
 
         Self::new(next_glasses)
     }
@@ -88,8 +83,8 @@ impl Display for State {
 #[cfg(test)]
 mod tests {
     use crate::models::glass::Glass;
-    use crate::models::state::State;
     use crate::models::operations::Operation;
+    use crate::models::state::State;
 
     mod create {
         use pretty_assertions::assert_eq;
@@ -168,7 +163,6 @@ mod tests {
 
     mod available_operations {
         use pretty_assertions::assert_eq;
-
 
         use super::*;
 
