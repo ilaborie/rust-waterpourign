@@ -1,0 +1,23 @@
+body {
+	margin: 0;
+	font-family: sans-serif;
+}
+
+section {
+	padding: .5em;
+}
+
+form fieldset {
+	display: flex;
+	flex-direction: column;
+}
+form fieldset button {
+	max-width: 6em;
+}
+form fieldset label {
+	margin: .25em;
+}
+
+.state + .state::before {
+	content: ' --> ';
+}

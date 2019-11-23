@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+	      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Waterpouring</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main>
+	<section>
+		<form id="form">
+			<fieldset>
+				<legend>Problem</legend>
+
+				<label>
+					<input type="radio" name="problem" value="1">
+					<span class="problem">
+						<span class="state">
+							<span class="glass">0/5</span>
+							<span class="glass">0/3</span>
+						</span>
+						<span class="state">
+							<span class="glass">4/5</span>
+							<span class="glass">0/3</span>
+						</span>
+					</span>
+				</label>
+
+				<label>
+					<input type="radio" name="problem" value="2">
+					<span class="problem">
+						<span class="state">
+							<span class="glass">0/8</span>
+							<span class="glass">0/5</span>
+						</span>
+						<span class="state">
+							<span class="glass">6/8</span>
+							<span class="glass">0/5</span>
+						</span>
+					</span>
+				</label>
+
+				<label>
+					<input type="radio" name="problem" value="3">
+					<span class="problem">
+						<span class="state">
+							<span class="glass">12/12</span>
+							<span class="glass">0/8</span>
+							<span class="glass">0/5</span>
+						</span>
+						<span class="state">
+							<span class="glass">6/12</span>
+							<span class="glass">6/8</span>
+							<span class="glass">0/5</span>
+						</span>
+					</span>
+				</label>
+
+				<label>
+					<input type="radio" name="problem" value="3">
+					<span class="problem">
+						<span class="state">
+							<span class="glass">0/24</span>
+							<span class="glass">0/13</span>
+							<span class="glass">0/11</span>
+							<span class="glass">0/5</span>
+						</span>
+						<span class="state">
+							<span class="glass">6/24</span>
+							<span class="glass">6/13</span>
+							<span class="glass">6/11</span>
+							<span class="glass">0/5</span>
+						</span>
+					</span>
+				</label>
+
+				<button type="submit">Solve</button>
+			</fieldset>
+		</form>
+	</section>
+</main>
+
+<script>
+  const problems = {
+    "1": ["0/5, 0/3", "4/5, 0/3"],
+    "2": ["0/8, 0/5", "6/8, 0/5"],
+    "3": ["12/12, 0/8, 0/5", "6/12, 6/8, 0/5"],
+    "4": ["0/24, 0/13, 0/11, 0/5", "6/24, 6/13, 6/11, 0/5"]
+  };
+
+  const elt = document.getElementById("form");
+  elt.onsubmit = () => {
+    const selected = elt['problem'].value;
+    const [from, to] = problems[selected];
+    console.log(`Solve ${from} -> ${to}`);
+    return false;
+  };
+
+</script>
+</body>
+</html>

@@ -1,6 +1,3 @@
-#[profile.release]
-#debug = true
-
 [workspace]
 members = [
     "waterpouring-rec",
