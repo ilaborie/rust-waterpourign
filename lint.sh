@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 
-cargo clean -p rust-waterpouring
+project=${PWD##*/}
+
+cargo clean -p "$project"
 cargo clippy -- -W clippy::pedantic -A clippy::module-name-repetitions

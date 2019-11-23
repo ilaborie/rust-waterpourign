@@ -11,7 +11,6 @@ pub struct Glass {
 }
 
 impl Glass {
-
     pub fn new(current: u32, capacity: u32) -> Self {
         assert!(capacity > 0, "Capacity should be > 0");
         assert!(current <= capacity, "Current should be <= capacity");
@@ -42,7 +41,7 @@ impl Glass {
         self.capacity - self.current
     }
 
-    pub fn add(&self, rhs: u32) -> Self{
+    pub fn add(&self, rhs: u32) -> Self {
         let current = min(self.capacity, self.current + rhs);
         Self::new(current, self.capacity)
     }
@@ -59,7 +58,9 @@ impl Glass {
 impl From<&str> for Glass {
     fn from(s: &str) -> Self {
         let re = Regex::new(r"^(?P<current>\d*)/(?P<capacity>\d*)$").unwrap();
-        let caps = re.captures(s).expect("Invalid string, expected something like '2/5'");
+        let caps = re
+            .captures(s)
+            .expect("Invalid string, expected something like '2/5'");
 
         let current: u32 = caps.name("current").unwrap().as_str().parse().unwrap();
         let capacity: u32 = caps.name("capacity").unwrap().as_str().parse().unwrap();
@@ -76,7 +77,7 @@ impl Display for Glass {
 
 #[cfg(test)]
 mod tests {
-    use crate::models::glass::Glass;
+    use super::*;
 
     mod create_glass {
         use pretty_assertions::assert_eq;
@@ -149,7 +150,13 @@ mod tests {
             let capacity = 1;
             let glass = Glass::new_empty(capacity);
 
-            assert_eq!(glass, Glass { current: 0, capacity });
+            assert_eq!(
+                glass,
+                Glass {
+                    current: 0,
+                    capacity
+                }
+            );
         }
 
         #[test]
@@ -256,7 +263,13 @@ mod tests {
 
             let result = glass.empty();
 
-            assert_eq!(result, Glass { current: 0, capacity });
+            assert_eq!(
+                result,
+                Glass {
+                    current: 0,
+                    capacity
+                }
+            );
         }
     }
 
@@ -273,7 +286,13 @@ mod tests {
 
             let result = glass.fill();
 
-            assert_eq!(result, Glass { current: capacity, capacity });
+            assert_eq!(
+                result,
+                Glass {
+                    current: capacity,
+                    capacity
+                }
+            );
         }
     }
 
@@ -290,7 +309,13 @@ mod tests {
 
             let result = glass.add(4);
 
-            assert_eq!(result, Glass { current: 7, capacity });
+            assert_eq!(
+                result,
+                Glass {
+                    current: 7,
+                    capacity
+                }
+            );
         }
 
         #[test]
@@ -301,7 +326,13 @@ mod tests {
 
             let result = glass.add(12);
 
-            assert_eq!(result, Glass { current: capacity, capacity });
+            assert_eq!(
+                result,
+                Glass {
+                    current: capacity,
+                    capacity
+                }
+            );
         }
     }
 
@@ -318,7 +349,13 @@ mod tests {
 
             let result = glass.sub(4);
 
-            assert_eq!(result, Glass { current: 3, capacity });
+            assert_eq!(
+                result,
+                Glass {
+                    current: 3,
+                    capacity
+                }
+            );
         }
 
         #[test]
@@ -329,7 +366,13 @@ mod tests {
 
             let result = glass.sub(12);
 
-            assert_eq!(result, Glass { current: 0, capacity });
+            assert_eq!(
+                result,
+                Glass {
+                    current: 0,
+                    capacity
+                }
+            );
         }
     }
 }

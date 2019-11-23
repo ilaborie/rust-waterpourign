@@ -1,0 +1,11 @@
+[package]
+name = "waterpouring-model"
+version = "0.1.0"
+authors = ["Igor Laborie <ilaborie@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+regex = "1.2"
+
+[dev-dependencies]
+pretty_assertions = "0.6"

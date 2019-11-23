@@ -1,13 +1,13 @@
 use std::fmt::{Display, Error, Formatter};
 use std::hash::Hash;
 
-use crate::models::glass::Glass;
-use crate::models::operations::Operation;
-use crate::models::operations::Operation::{Empty, Fill, Pour};
+use crate::glass::Glass;
+use crate::operations::Operation;
+use crate::operations::Operation::{Empty, Fill, Pour};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct State {
-    glasses: Vec<Glass>
+    glasses: Vec<Glass>,
 }
 
 impl State {
@@ -21,17 +21,40 @@ impl State {
     }
 
     pub fn apply(&self, operation: Operation) -> Self {
-        let next_glasses = self.glasses.iter().enumerate()
+        let next_glasses = self
+            .glasses
+            .iter()
+            .enumerate()
             .map(|(idx, g)| match operation {
-                Empty { glass } =>
-                    if idx == glass { g.empty() } else { g.clone() },
-                Fill { glass } =>
-                    if idx == glass { g.fill() } else { g.clone() },
-                Pour { from, to } =>
-                    if idx == from { g.sub(self.glasses[to].remaining_capacity()) } //
-                    else if idx == to { g.add(self.glasses[from].current) } //
-                    else { g.clone() },
-            }).collect();
+                Empty { glass } => {
+                    if idx == glass {
+                        g.empty()
+                    } else {
+                        g.clone()
+                    }
+                }
+                Fill { glass } => {
+                    if idx == glass {
+                        g.fill()
+                    } else {
+                        g.clone()
+                    }
+                }
+                Pour { from, to } => {
+                    if idx == from {
+                        g.sub(self.glasses[to].remaining_capacity())
+                    }
+                    //
+                    else if idx == to {
+                        g.add(self.glasses[from].current)
+                    }
+                    //
+                    else {
+                        g.clone()
+                    }
+                }
+            })
+            .collect();
 
         Self::new(next_glasses)
     }
@@ -59,12 +82,18 @@ impl State {
     }
 }
 
-
 impl From<&str> for State {
     fn from(s: &str) -> Self {
-        let glasses: Vec<Glass> = s.split(',')
+        let glasses: Vec<Glass> = s
+            .split(',')
             .map(str::trim)
-            .filter_map(|s| if s.is_empty() { None } else { Some(Glass::from(s)) })
+            .filter_map(|s| {
+                if s.is_empty() {
+                    None
+                } else {
+                    Some(Glass::from(s))
+                }
+            })
             .collect();
         Self::new(glasses)
     }
@@ -73,7 +102,10 @@ impl From<&str> for State {
 impl Display for State {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         // FIXME use a foldLeft
-        let s: Vec<String> = self.glasses.clone().into_iter()
+        let s: Vec<String> = self
+            .glasses
+            .clone()
+            .into_iter()
             .map(|g| format!("{}", g))
             .collect();
         write!(f, "{}", s.join(", "))
@@ -82,12 +114,11 @@ impl Display for State {
 
 #[cfg(test)]
 mod tests {
-    use crate::models::glass::Glass;
-    use crate::models::operations::Operation;
-    use crate::models::state::State;
+    use super::*;
+    use crate::glass::Glass;
+    use crate::operations::Operation;
 
     mod create {
-        use pretty_assertions::assert_eq;
 
         use super::*;
 
@@ -117,11 +148,7 @@ mod tests {
             let s = "4/7, 3/5, 0/2";
             let result = State::from(s);
 
-            let glasses = vec![
-                Glass::new(4, 7),
-                Glass::new(3, 5),
-                Glass::new(0, 2),
-            ];
+            let glasses = vec![Glass::new(4, 7), Glass::new(3, 5), Glass::new(0, 2)];
             assert_eq!(result, State { glasses })
         }
 
@@ -172,9 +199,7 @@ mod tests {
 
             let result = state.available_operations();
 
-            let expected: Vec<Operation> = vec![
-                Operation::empty(0),
-            ];
+            let expected: Vec<Operation> = vec![Operation::empty(0)];
             assert_eq!(&result[..], &expected[..])
         }
 
@@ -184,9 +209,7 @@ mod tests {
 
             let result = state.available_operations();
 
-            let expected: Vec<Operation> = vec![
-                Operation::fill(0),
-            ];
+            let expected: Vec<Operation> = vec![Operation::fill(0)];
             assert_eq!(&result[..], &expected[..])
         }
 
@@ -196,10 +219,7 @@ mod tests {
 
             let result = state.available_operations();
 
-            let expected: Vec<Operation> = vec![
-                Operation::fill(0),
-                Operation::empty(0),
-            ];
+            let expected: Vec<Operation> = vec![Operation::fill(0), Operation::empty(0)];
             assert_eq!(&result[..], &expected[..])
         }
 

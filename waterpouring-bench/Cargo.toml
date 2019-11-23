@@ -1,0 +1,18 @@
+[package]
+name = "waterpouring-bench"
+version = "0.1.0"
+authors = ["Igor Laborie <ilaborie@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+waterpouring-model = {path="../waterpouring-model"}
+waterpouring-imp = {path="../waterpouring-imp"}
+waterpouring-rec = {path="../waterpouring-rec"}
+waterpouring-rec2 = {path="../waterpouring-rec2"}
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "solvers"
+harness = false

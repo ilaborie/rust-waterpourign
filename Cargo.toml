@@ -1,18 +1,13 @@
-[package]
-name = "rust-waterpouring"
-version = "0.1.0"
-authors = ["Igor Laborie <ilaborie@gmail.com>"]
-edition = "2018"
+#[profile.release]
+#debug = true
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-regex = "1.2"
-
-[dev-dependencies]
-pretty_assertions = "0.6"
-criterion = "0.3"
-
-[[bench]]
-name = "solvers"
-harness = false
+[workspace]
+members = [
+    "waterpouring-rec",
+    "waterpouring-rec2",
+    "waterpouring-imp",
+    "waterpouring-model",
+    "waterpouring-talk",
+    "waterpouring-bench",
+    "waterpouring-wasm",
+]

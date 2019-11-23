@@ -1,41 +1,72 @@
 use std::collections::HashSet;
+use std::hash::BuildHasher;
 
-use crate::problem::{check_solvable_problem, Problem, Solver, SolverResult, StateWithHistory};
-use crate::problem::SolverError::UnsolvableProblem;
-use crate::solver::process_state_history;
-use crate::models::state::State;
+use waterpouring_model::operations::Operation;
+use waterpouring_model::problem::{check_solvable, Problem};
+use waterpouring_model::solver::SolverError::UnsolvableProblem;
+use waterpouring_model::solver::{Solver, SolverResult, StateWithHistory};
+use waterpouring_model::state::State;
 
 #[derive(Debug)]
 pub struct ImperativeSolver();
 
+impl ImperativeSolver {
+    fn process_state_history<S: BuildHasher>(
+        new_states_with_history: &mut StateWithHistory,
+        visited: &mut HashSet<State, S>,
+        state: &State,
+        history: &[Operation],
+    ) {
+        let operations = state.available_operations();
+        for op in operations {
+            let new_state = state.apply(op);
+            if !visited.contains(&new_state) {
+                let mut new_history = history.to_owned();
+                new_history.push(op);
+                new_states_with_history.push((new_state.clone(), new_history));
+                visited.insert(new_state);
+            }
+        }
+    }
+}
+
 impl Solver for ImperativeSolver {
     fn solve(&self, problem: Problem) -> SolverResult {
-// Check
-        let problem = check_solvable_problem(&problem)?;
+        // Check
+        let problem = check_solvable(&problem)?;
 
-// first iteration
+        // first iteration
         let mut states_with_history: StateWithHistory = vec![(problem.from.clone(), vec![])];
         let mut visited: HashSet<State> = HashSet::new();
         visited.insert(problem.from.clone());
 
         loop {
-            let maybe_solution = states_with_history.clone().into_iter()
+            let maybe_solution = states_with_history
+                .clone()
+                .into_iter()
                 .find(|(state, _)| *state == problem.to.clone());
             if let Some(result) = maybe_solution {
                 return Ok(result.1);
             }
 
-// Build new solution
+            // find next states
             let mut new_states_with_history: StateWithHistory = vec![];
             let initial_visited_size = visited.len();
 
             for (state, history) in states_with_history {
-                process_state_history(&mut new_states_with_history, &mut visited, &state, &history);
+                Self::process_state_history(
+                    &mut new_states_with_history,
+                    &mut visited,
+                    &state,
+                    &history,
+                );
             }
 
-// check visited
+            // check visited
             if initial_visited_size == visited.len() {
-                return Err(UnsolvableProblem { problem: problem.to_string() });
+                return Err(UnsolvableProblem {
+                    problem: problem.to_string(),
+                });
             }
 
             states_with_history = new_states_with_history;
@@ -47,8 +78,8 @@ impl Solver for ImperativeSolver {
 mod tests {
     use pretty_assertions::assert_eq;
 
-    use crate::problem::SolverError::InvalidProblem;
-    use crate::solvers::test_solver;
+    use waterpouring_model::solver::test_solver;
+    use waterpouring_model::solver::SolverError::InvalidProblem;
 
     use super::*;
 
@@ -79,7 +110,13 @@ mod tests {
         let result = solver.solve(problem.clone());
 
         let reason = "Should have same number of glasses".to_string();
-        assert_eq!(result, Err(InvalidProblem { problem: problem.to_string(), reason }))
+        assert_eq!(
+            result,
+            Err(InvalidProblem {
+                problem: problem.to_string(),
+                reason,
+            })
+        )
     }
 
     #[test]
@@ -91,8 +128,13 @@ mod tests {
 
         let result = solver.solve(problem.clone());
 
-// FIXME I just want to test the type
-        assert_eq!(result, Err(UnsolvableProblem { problem: problem.to_string() }))
+        // FIXME I just want to test the type
+        assert_eq!(
+            result,
+            Err(UnsolvableProblem {
+                problem: problem.to_string()
+            })
+        )
     }
 
     #[test]
