@@ -57,8 +57,10 @@ impl Glass {
 
 impl From<&str> for Glass {
     fn from(s: &str) -> Self {
-        let re = Regex::new(r"^(?P<current>\d*)/(?P<capacity>\d*)$").unwrap();
-        let caps = re
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"^(?P<current>\d*)/(?P<capacity>\d*)$").unwrap();
+        }
+        let caps = RE
             .captures(s)
             .expect("Invalid string, expected something like '2/5'");
 

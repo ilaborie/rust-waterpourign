@@ -6,6 +6,7 @@
 ### Profile only at root
 
 Cargo workspace, with a members targeting WASM.
+Does it make sense to have
 
 > warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
 package:   /Users/igorlaborie/Documents/Workspaces/playground/rust-waterpouring/waterpouring-wasm/Cargo.toml
@@ -26,3 +27,11 @@ It's remove the warning, but running `wasm-pack build`, the generated wasm is bi
 Maybe that's not a good idea to put a WASM project into a workspace.
 
 ### 
+
+
+## Ideas
+
+Syntax highligher: [syntect](https://github.com/trishume/syntect)
+
+<https://crates.io/crates/pulldown-cmark>
+<https://crates.io/crates/mdbook>

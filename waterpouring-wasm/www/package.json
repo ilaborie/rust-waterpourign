@@ -12,6 +12,7 @@
   },
   "license": "(MIT OR Apache-2.0)",
   "dependencies": {
+    "github-markdown-css": "^3.0.1",
     "waterpouring-wasm": "file:../pkg"
   },
   "devDependencies": {
